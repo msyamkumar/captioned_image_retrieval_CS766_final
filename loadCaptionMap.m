@@ -2,6 +2,7 @@ function [ captionMap ] = loadCaptionMap( N, filename )
 %LOADCAPTIONMAP Returns a hashtable that maps image filename to its first caption
 %     Assumes Flickr8 convention where lines are of format
 %     "<filename>#<0, 1, 2, 3 or 4> <caption>"
+%     Changes all captions to uppercase
 %
 %     `N` function returns captions of first N filenames (optional; default: loads all)
 %     `filename` filename with caption data
@@ -39,5 +40,5 @@ for i = 1 : numLines
     caption = subsref(strsplit(line, {'\t'}), struct('type','{}','subs',{{2}}));
     %captionInd = subsref(strsplit(line, {'\t', '#'}), struct('type','{}','subs',{{2}}));
     
-    captionMap(filename) = caption;
+    captionMap(filename) = upper(caption);
 end
