@@ -2,7 +2,7 @@ function [ synsets ]= loadSynsets( filename )
 %LOADSYNSETS Load synsets, a.k.a labels of ImageNet challenge
 %   Returns a 1000x1 cell array of strings
 %   
-%   `filename` full or relative path to synset_words.txt
+%   `filename` full or relative path to file, e.g., '../synset_words.txt'
 %   Lines are in the form:
 %   <ID> <word1>, <word2>, ..., <wordN>
 
