@@ -1,60 +1,64 @@
-%% Example of running basic topic model (LDA)
+function [ ] = ldaTest(captionMapTrain, captionMapTest, wordMap, WP, DP, params )
+% Use LDA model to compute similar captions
 %
-% This example shows how to run the LDA Gibbs sampler on a small dataset to
-% extract a set of topics and shows the most likely words per topic.
+% captionMapTest: map of image names to captions
+% wordMap: map of words to their index in vocabulary
+% WP: estimated words x topics counts matrix
+% DP: estimated documents x topics counts matrix
+% Z: vector of topics estimated for each word in training data
 
-%%
-% Load the vocabulary and bag-of-words
-if ~exist('dataDir', 'var')
-    dataDir = 'data';
+
+alpha = params.laplaceSmoothingCoefficient;
+
+testSize = numel(captionMapTest.keys);
+testImages = captionMapTest.keys;
+trainImages = captionMapTrain.keys;
+
+[D, T] = size(DP);
+WPdist = WP ./ repmat(sum(WP,2), 1, size(WP,2));
+DPdist = full(DP ./ repmat(sum(DP,2), 1, size(DP,2)));
+for i = 1:D
+    DPdist(i,:) = laplaceSmoothing(DPdist(i,:), alpha);
 end
-load(fullfile(dataDir, 'bagofwords_imagecaptions.mat'));
-load(fullfile(dataDir, 'words_imagecaptions.mat'));
+distances = zeros(testSize, D);
+for i = 1:testSize
+    % estimate distribution over topics for this document
+    dist = zeros(1, T);
+    document = captionMapTest(testImages{i});
+    words = strsplit(document);
+    k = 0;
+    for j = 1 : numel(words)
+        word = char(words(j));
+        if isKey(wordMap, word)
+            idx = wordMap(word);
+            dist = dist + WPdist(idx,:);
+            k = k + 1;
+        end
+    end
+    dist = dist/k;
+    dist = laplaceSmoothing(dist, alpha);
+    % compute KL-divergence of distribution with the distributions over 
+    % topics for all training documents
+    for j = 1:D
+        dp2 = DPdist(j,:);
+        KL1 = sum( dist .* log2( dist ./ dp2 ));
+        KL2 = sum( dp2 .* log2( dp2 ./ dist ));
+        distances(i,j) = (KL1 + KL2)/2;
+    end
+    % compute nearest neighbors of document i
+    [~,idx] = sort(distances(i,:));
+    fig1 = figure;
+    [X,mapX] = imread(fullfile(params.imageDir, testImages{i}));
+    subplot(3,3,2), imshow(X,mapX);
+    nearestNeighbors = trainImages(idx(1:params.K));
+    fprintf('Nearest neighbors for %s:\n', document);
+    for j = 1:numel(nearestNeighbors)
+        [X,mapX] = imread(fullfile(params.imageDir, nearestNeighbors{j}));
+        subplot(3,3,j+3), imshow(X,mapX);
+        fprintf('%s\n', captionMapTrain(nearestNeighbors{j}));
+    end
+    pause;
+    close(fig1);
+end
+end
 
-
-%%
-% Set the number of topics
-T=50; 
-
-%%
-% Set the hyperparameters
-BETA=200/numel(WO);
-ALPHA=50/T;
-
-%%
-% The number of iterations
-N = 1000; 
-
-%%
-% The random seed
-SEED = 3;
-
-%%
-% What output to show (0=no output; 1=iterations; 2=all output)
-OUTPUT = 1;
-
-%%
-% This function might need a few minutes to finish
-tic
-[ WP,DP,Z ] = GibbsSamplerLDA( WS , DS , T , N , ALPHA , BETA , SEED , OUTPUT );
-toc
-
-%%
-% Just in case, save the resulting information from this sample 
-save(strcat(fullfile(dataDir, 'ldasingle_imagecaptions.mat'), ' WP DP Z ALPHA BETA SEED N'));
-
-%%
-% Put the most 7 likely words per topic in cell structure S
-[S] = WriteTopics( WP , BETA , WO , 7 , 0.7 );
-
-fprintf( '\n\nMost likely words in the first ten topics:\n' );
-
-%%
-% Show the most likely words in the first ten topics
-S( 1:10 )  
-
-%%
-% Write the topics to a text file
-WriteTopics( WP , BETA , WO , 10 , 0.7 , 4 , fullfile(dataDir, 'topics.txt') );
-
-fprintf( '\n\nInspect the file ''topics.txt'' for a text-based summary of the topics\n' ); 

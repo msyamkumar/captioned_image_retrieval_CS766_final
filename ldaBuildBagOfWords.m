@@ -1,31 +1,9 @@
-% Build bag-of-words model and vocabulary from image captions
+function [ WO, wordMap, WS, DS ] = ldaBuildBagOfWords( captionMap, params )
+% Builds bag-of-words model and vocabulary from image captions
 
-%% Get captions from each image
-disp('Retrieving image captions...');
-if ~exist('dataDir', 'var')
-    dataDir = 'data';
-end
-if ~exist('stopWordsFile', 'var')
-    stopWordsFile = fullfile(dataDir, 'stopwordlist.txt');
-end
-
-captionsFile = fullfile(dataDir, 'captionMap.mat');
-if exist(captionsFile, 'file')
-    load(captionsFile);
-else
-    captionMap = loadCaptionMap();
-    numImages = numel(captionMap.keys);
-    imageList = captionMap.keys;
-
-    % Change all captions to uppercase
-    for i = 1 : numImages;
-        captionMap(imageList{i}) = upper(captionMap(imageList{i}));
-    end
-
-    % cache captions file
-    save(captionsFile, 'captionMap', 'numImages', 'imageList');
-end
-
+stopWordsFile = params.stopWordsFile;
+numImages = numel(captionMap.keys);
+imageList = captionMap.keys;
 concatCaptions = captionMap.values;
 
 % Build vocabulary so that we can build bag of words
@@ -62,8 +40,6 @@ end
 idx = logical(idx);
 V = V(idx);
 
-vocabSize = numel(V);
-
 % Build token, document index vectors
 disp('Building token and document index vectors...');
 clear WS DS;
@@ -81,8 +57,8 @@ for i = 1 : numImages
 end
 
 WO = V';
-save(fullfile(dataDir, 'words_imagecaptions.mat'), 'WO');
+% save(fullfile(dataDir, 'words_imagecaptions.mat'), 'WO');
 
 WS = WS';
 DS = DS';
-save(fullfile(dataDir, 'bagofwords_imagecaptions.mat'), 'WS', 'DS');
+% save(fullfile(dataDir, 'bagofwords_imagecaptions.mat'), 'WS', 'DS');
