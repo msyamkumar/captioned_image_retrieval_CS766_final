@@ -70,8 +70,11 @@ fprintf(['Initialized Caffe\n' ...
     'Model definition file:\n\t%s\nModel file:\n\t%s\n'], ...
     model_def_file, model_file);
 
-% For demo purposes we will use the peppers image
-im_filenames = {'cameraman.tif', 'peppers.png'};
+%Get a couple of nice FILENAMES! Ooo yeah
+tmp_struct = dir('data/Flicker8k_Dataset');
+im_filenames = {tmp_struct.name};
+im_filenames = im_filenames(3:5);
+
 ims = cell(1, numel(im_filenames));
 for i = 1 : numel(ims)
     im = imread(im_filenames{i});
@@ -92,6 +95,8 @@ for i = 1 : numel(ims)
 end
 toc;
 
+crop_sets{1}(:, :, :, 6:10) = crop_sets{2}(:, :, :, 1:5);
+
 %% do forward pass to get scores
 % scores are now Width x Height x Channels x Num
 tic;
@@ -105,3 +110,18 @@ for i = 1 : numel(crop_sets)
     feats{i} = feat;
 end
 fprintf('Forward pass = %f s\n', toc);
+
+%%
+
+labels = loadSynsets();
+for i = 1 : numel(ims)
+
+    [~, maxInd] = max(feats{i});
+    label = labels{maxInd};
+    
+    figure('name', label);
+    subplot(121);
+    imshow(ims{i})
+    subplot(122);
+    plot(feats{i});
+end
