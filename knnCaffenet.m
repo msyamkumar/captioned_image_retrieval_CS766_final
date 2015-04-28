@@ -1,7 +1,7 @@
 %% Performs KNN search given a set of image filenames and their corresponding feature vector.
 
-archive = 'centerCrop.mat';
-if exists(archive, 'file')
+archive = 'centerCrops.mat';
+if exist(archive, 'file')
     load(archive);
 end
 
@@ -44,7 +44,10 @@ testInds = cell2mat(filename2ind.values(test_filenames));
 xTest = feats(:, testInds)';
 
 %% Get KNN of each test instance
+
+fprintf('Running KNN... ');tic;
 inds = knnsearch(xTrain, xTest);
+fprintf('Done in %f s\n', toc);
 
 %%
 for ii = 300:320
