@@ -71,32 +71,37 @@ fprintf(['Initialized Caffe\n' ...
     model_def_file, model_file);
 
 % For demo purposes we will use the peppers image
-im_filename = 'cameraman.tif';
-im = imread(im_filename);
-if size(im, 3) == 1
-    im = repmat(im, [1, 1, 3]);
+im_filenames = {'cameraman.tif', 'peppers.png'};
+ims = cell(1, numel(im_filenames));
+for i = 1 : numel(ims)
+    im = imread(im_filenames{i});
+    if size(im, 3) == 1
+        im = repmat(im, [1 1 3]);
+    end
+    ims{i} = im;
 end
 
 % prepare oversampled input
 % input_data is Height x Width x Channel x Num
 tic;
-input_data = {prepare_image(im)};
+crop_sets = cell(1, numel(ims));
+for i = 1 : numel(ims)
+    im = ims{i};
+    curr_crops = prepare_image(im);
+    crop_sets{i} = curr_crops;
+end
 toc;
 
-% do forward pass to get scores
+%% do forward pass to get scores
 % scores are now Width x Height x Channels x Num
 tic;
-scores = caffe('forward', input_data);
-size(scores)
-toc;
-
-scores = scores{1};
-size(scores)
-scores = squeeze(scores);
-size(scores)
-scores = mean(scores,2);
-
-[~,maxlabel] = max(scores);
-
-labels = loadSynsets();
-fprintf('Label of %s is %s\n', im_filename, labels{maxlabel});
+for i = 1 : numel(crop_sets)
+    crop_set = crop_sets(i);
+    feat = caffe('forward', crop_set);
+    feat = feat{1};
+    feat = squeeze(feat);
+    feat = mean(feat,2);
+    
+    feats{i} = feat;
+end
+fprintf('Forward pass = %f s\n', toc);
