@@ -49,7 +49,8 @@ fprintf('Running KNN... ');tic;
 inds = knnsearch(xTrain, xTest);
 fprintf('Done in %f s\n', toc);
 
-%%
+%% Display results
+
 for ii = 300:320
     query_filename = test_filenames{ii};
     result_filename = train_filenames{inds(ii)};
@@ -62,3 +63,16 @@ for ii = 300:320
     title('Result');
     imshow(imread(result_filename));
 end
+
+%% Save results
+
+output_filename = fullfile(fileparts(mfilename('fullpath')), 'caffenet_results.txt');
+fid = fopen(output_filename, 'w');
+for ii = 1 : numel(test_filenames)
+    
+    query_filename = test_filenames{ii};
+    result_filename = train_filenames{inds(ii)};
+    
+    fprintf(fid, '%s\t%s\n', query_filename, result_filename);
+end
+fclose(fid);
