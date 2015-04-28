@@ -73,55 +73,66 @@ fprintf(['Initialized Caffe\n' ...
 %Get a couple of nice FILENAMES! Ooo yeah
 tmp_struct = dir('data/Flicker8k_Dataset');
 im_filenames = {tmp_struct.name};
-im_filenames = im_filenames(3:5);
+im_filenames = im_filenames(3:end);  % Remove . and ..
 
-ims = cell(1, numel(im_filenames));
-for i = 1 : numel(ims)
-    im = imread(im_filenames{i});
-    if size(im, 3) == 1
-        im = repmat(im, [1 1 3]);
+% make dataset multiple of 10 since network takes ten image at a time
+im_filenames = im_filenames(1:end - mod(numel(im_filenames), 10));
+
+% im_filenames = im_filenames(1:30);
+
+% Feature vectors 1000 x M size, one column for one image filename
+feats = [];
+
+%% Compute features by batches of ten images
+tic;
+for ii = 1 : numel(im_filenames)
+    im = imread(im_filenames{ii});
+        
+    % Crop current image and place into the batch of ten
+    % curr_crop is Height x Width x Channel
+    curr_crop = prepare1Image(im);
+    [h, w, c] = size(curr_crop);
+    if mod(ii - 1, 10) == 0
+        tenCrops = zeros(h, w, c, 10, 'like', curr_crop);
     end
-    ims{i} = im;
-end
+    tenCrops(:, :, :, mod(ii - 1, 10) + 1) = curr_crop;
 
-% prepare oversampled input
-% input_data is Height x Width x Channel x Num
-tic;
-crop_sets = cell(1, numel(ims));
-for i = 1 : numel(ims)
-    im = ims{i};
-    curr_crops = prepare_image(im);
-    crop_sets{i} = curr_crops;
-end
-toc;
-
-crop_sets{1}(:, :, :, 6:10) = crop_sets{2}(:, :, :, 1:5);
-
-%% do forward pass to get scores
-% scores are now Width x Height x Channels x Num
-tic;
-for i = 1 : numel(crop_sets)
-    crop_set = crop_sets(i);
-    feat = caffe('forward', crop_set);
-    feat = feat{1};
-    feat = squeeze(feat);
-    feat = mean(feat,2);
+    % do forward pass to get features in batches of ten
+    % scores are now Width x Height x Channels x Num
+    if mod(ii - 1, 10) == 9
+        tenFeats = caffe('forward', {tenCrops});
+        tenFeats = squeeze(tenFeats{1});
+        [numFeat, ~] = size(tenFeats);
+        
+        % Initialize feats
+        if ii == 1
+            feats = zeros(numFeat, numel(im_filenames), 'like', tenFeats);
+        end
+        
+        % Slot this minibatch of features into the full batch
+        feats(:, ii - 9 : ii) = tenFeats;
+    end
     
-    feats{i} = feat;
+    if mod(ii, 100) == 0
+        fprintf('Computed features for %i out of %i images\n', ii, numel(im_filenames));
+    end
 end
 fprintf('Forward pass = %f s\n', toc);
 
 %%
 
-labels = loadSynsets();
-for i = 1 : numel(ims)
+if false
+    labels = loadSynsets();
+    for ii = 1 : numel(im_filenames)
 
-    [~, maxInd] = max(feats{i});
-    label = labels{maxInd};
-    
-    figure('name', label);
-    subplot(121);
-    imshow(ims{i})
-    subplot(122);
-    plot(feats{i});
+        feat = feats(:, ii);
+        [~, maxInd] = max(feat);
+        label = labels{maxInd};
+
+        figure('name', label);
+        subplot(121);
+        imshow(imread(im_filenames{ii}));
+        subplot(122);
+        plot(feat);
+    end
 end
