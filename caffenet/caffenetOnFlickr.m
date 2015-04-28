@@ -51,13 +51,24 @@
 % The actual forward function. It takes in a cell array of 4-D arrays as
 % input and outputs a cell array. 
 
+% Get directory of current running function since input files are in there
+% NOTE: this dir is different from pwd
+[func_dir, ~, ~] = fileparts(mfilename('fullpath'));
 
 % init caffe network (spews logging info)
-if exist('use_gpu', 'var')
-  matcaffe_init(use_gpu);
-else
-  matcaffe_init();
+model_def_file = fullfile(func_dir, 'deploy.prototxt');
+model_file = fullfile(func_dir, 'bvlc_reference_caffenet.caffemodel');
+if ~exist(model_def_file, 'file')
+    error('Model definition file %s not found', model_def_file);
 end
+if ~exist(model_file, 'file')
+    error('Model file %s not found', model_file);
+end
+caffe('init', model_def_file, model_file, 'test')
+caffe('set_mode_cpu');
+fprintf(['Initialized Caffe\n' ...
+    'Model definition file:\n\t%s\nModel file:\n\t%s\n'], ...
+    model_def_file, model_file);
 
 % For demo purposes we will use the peppers image
 im_filename = 'cameraman.tif';

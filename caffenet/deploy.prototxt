@@ -204,9 +204,9 @@ layer {
     num_output: 1000
   }
 }
-layer {
-  name: "prob"
-  type: "Softmax"
-  bottom: "fc8"
-  top: "prob"
-}
+#layer {
+#  name: "prob"
+#  type: "Softmax"
+#  bottom: "fc8"
+#  top: "prob"
+#}
