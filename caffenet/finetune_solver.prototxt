@@ -1,17 +1,21 @@
-net: "models/finetune_flickr_style/train_val.prototxt"
-test_iter: 100
+# path is relative to where you called caffe train
+# I'm making it absolute since caffe and this script are in very different locations
+net: "/home/bjiashen/captioned-image-retrieval/caffenet/finetune_train_val.prototxt"
+#net: "models/finetune_flickr_style/train_val.prototxt"
+test_iter: 1
 test_interval: 1000
 # lr for fine-tuning should be lower than when starting from scratch
 base_lr: 0.001
 lr_policy: "step"
 gamma: 0.1
 # stepsize should also be lower, as we're closer to being done
+# stepsize is no. of iter before lr is decayed by gamma
 stepsize: 20000
 display: 20
 max_iter: 100000
 momentum: 0.9
 weight_decay: 0.0005
 snapshot: 10000
-snapshot_prefix: "models/finetune_flickr_style/finetune_flickr_style"
+snapshot_prefix: "/home/bjiashen/captioned-image-retrieval/caffenet"
 # uncomment the following to default to CPU mode solving
-# solver_mode: CPU
+solver_mode: CPU
