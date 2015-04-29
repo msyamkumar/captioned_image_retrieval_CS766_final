@@ -20,7 +20,7 @@ for i = 1 : numel(filenames)
 end
 
 % Join train and dev sets together; test set is separate
-train_filenames = [im_filename_sets{1}; im_filename_sets{2}];
+train_filenames = [im_filename_sets{1}];%; im_filename_sets{2}];
 test_filenames = im_filename_sets{end};
 
 % Remove filenames that weren't featurized (that's <10 examples)
@@ -51,28 +51,32 @@ fprintf('Done in %f s\n', toc);
 
 %% Display results
 
-for ii = 300:320
+for ii = 1:20
     query_filename = test_filenames{ii};
     result_filename = train_filenames{inds(ii)};
     
     figure;
+    hold on;
     subplot(121);
-    title('Query');
     imshow(imread(query_filename));
+    title('Query');
     subplot(122);
-    title('Result');
     imshow(imread(result_filename));
+    title('Result');
 end
+
 
 %% Save results
 
-output_filename = fullfile(fileparts(mfilename('fullpath')), 'caffenet_results.txt');
-fid = fopen(output_filename, 'w');
-for ii = 1 : numel(test_filenames)
-    
-    query_filename = test_filenames{ii};
-    result_filename = train_filenames{inds(ii)};
-    
-    fprintf(fid, '%s\t%s\n', query_filename, result_filename);
+if exist('do_save', 'var') && do_save
+    output_filename = fullfile(fileparts(mfilename('fullpath')), 'caffenet_results.txt');
+    fid = fopen(output_filename, 'w');
+    for ii = 1 : numel(test_filenames)
+
+        query_filename = test_filenames{ii};
+        result_filename = train_filenames{inds(ii)};
+
+        fprintf(fid, '%s\t%s\n', query_filename, result_filename);
+    end
+    fclose(fid);
 end
-fclose(fid);
