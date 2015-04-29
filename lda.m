@@ -39,7 +39,7 @@ disp('Done.');
 
 %% Split into training/test data
 disp('Splitting into training/test data...');
-[captionMapTrain, captionMapTest] = splitData(captionMap);
+[trainFiles, captionMapTrain, testFiles, captionMapTest] = splitData(captionMap);
 disp('Done.');
 
 %% Build bag-of-words and vocabulary
@@ -55,5 +55,5 @@ disp('Done.');
 
 %% Test model
 disp('Testing LDA model...');
-ldaTest(captionMapTrain, captionMapTest, wordMap, WP, DP, params);
+ldaTest(captionMapTrain, captionMapTest, testFiles, wordMap, WP, DP, params);
 disp('Done.');

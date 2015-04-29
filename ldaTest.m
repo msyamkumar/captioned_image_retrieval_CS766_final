@@ -1,4 +1,4 @@
-function [ ] = ldaTest(captionMapTrain, captionMapTest, wordMap, WP, DP, params )
+function [ ] = ldaTest(captionMapTrain, captionMapTest, testFiles, wordMap, WP, DP, params )
 % Use LDA model to compute similar captions
 %
 % captionMapTest: map of image names to captions
@@ -7,11 +7,9 @@ function [ ] = ldaTest(captionMapTrain, captionMapTest, wordMap, WP, DP, params 
 % DP: estimated documents x topics counts matrix
 % Z: vector of topics estimated for each word in training data
 
-
 alpha = params.laplaceSmoothingCoefficient;
 
 testSize = numel(captionMapTest.keys);
-testImages = captionMapTest.keys;
 trainImages = captionMapTrain.keys;
 
 [D, T] = size(DP);
@@ -21,10 +19,11 @@ for i = 1:D
     DPdist(i,:) = laplaceSmoothing(DPdist(i,:), alpha);
 end
 distances = zeros(testSize, D);
-for i = 1:testSize
+for i = 1 : testSize
+    testImage = testFiles{i};
+    document = captionMapTest(testImage);
     % estimate distribution over topics for this document
     dist = zeros(1, T);
-    document = captionMapTest(testImages{i});
     words = strsplit(document);
     k = 0;
     for j = 1 : numel(words)
@@ -48,7 +47,7 @@ for i = 1:testSize
     % compute nearest neighbors of document i
     [~,idx] = sort(distances(i,:));
     fig1 = figure;
-    [X,mapX] = imread(fullfile(params.imageDir, testImages{i}));
+    [X,mapX] = imread(fullfile(params.imageDir, testImage));
     subplot(3,3,2), imshow(X,mapX);
     nearestNeighbors = trainImages(idx(1:params.K));
     fprintf('Nearest neighbors for %s:\n', document);
