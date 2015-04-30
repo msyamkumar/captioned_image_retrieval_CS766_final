@@ -2,7 +2,7 @@
 # I'm making it absolute since caffe and this script are in very different locations
 net: "/home/bjiashen/captioned-image-retrieval/caffenet/finetune_train_val.prototxt"
 #net: "models/finetune_flickr_style/train_val.prototxt"
-test_iter: 1
+test_iter: 20
 test_interval: 1000
 # lr for fine-tuning should be lower than when starting from scratch
 base_lr: 0.001
@@ -15,7 +15,7 @@ display: 20
 max_iter: 100000
 momentum: 0.9
 weight_decay: 0.0005
-snapshot: 10000
-snapshot_prefix: "/home/bjiashen/captioned-image-retrieval/caffenet"
+snapshot: 1000
+snapshot_prefix: "/home/bjiashen/captioned-image-retrieval/caffenet/finetune"
 # uncomment the following to default to CPU mode solving
 solver_mode: CPU
