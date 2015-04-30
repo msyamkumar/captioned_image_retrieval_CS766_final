@@ -9,34 +9,33 @@ def remove_non_ascii_1(text):
     return ''.join([i if ord(i) < 128 else ' ' for i in text])
 
 downloadLimit = 100
-currDownload = 0
 
 #searchTags =  ['snowboarding', 'tench', ' Tinca tinca', 'goldfish', ' Carassius auratus', 'great white shark', ' white shark', ' man-eater', ' man-eating shark', ' Carcharodocarcharias', 'tiger shark', ' Galeocerdo cuvieri', 'hammerhead', ' hammerhead shark', 'electric ray', ' crampfish', ' numbfish', ' torpedo', 'stingray', 'cock', 'hen', 'ostrich', ' Struthio camelus', 'brambling', ' Fringilla montifringilla', 'goldfinch', ' Carduelis carduelis', 'house finch', ' linnet', ' Carpodacus mexicanus', 'junco', ' snowbird', 'indigo bunting', ' indigo finch', ' indigo bird', ' Passerina cyanea', 'robin' ]
-searchTags =  ['snowboarding']
+searchTags =  ['tench', ' Tinca tinca']
 
-client_id = '140f860c98af613'
-client_secret = '96ab107bb54adec22e30bab0acf46f801180ec91'
-#client_id = '4f22e772b8ad776'
-#client_secret = '4075e61182cdc5e333417254a4d403ca58ec7b45'
+#client_id = '140f860c98af613'
+#client_secret = '96ab107bb54adec22e30bab0acf46f801180ec91'
+client_id = '4f22e772b8ad776'
+client_secret = '4075e61182cdc5e333417254a4d403ca58ec7b45'
+cap = open("crawledCaptions.txt", "w+")
+capgif = open("crawledGIFCaptions.txt", "w+")
+#Create a directory to download the images to
+cmd = "rm -rf crawledImages" 
+os.system(cmd)
+cmd = "mkdir crawledImages" 
+os.system(cmd)
+cmd = "rm -rf crawledGIFImages" 
+os.system(cmd)
+cmd = "mkdir crawledGIFImages" 
+os.system(cmd)
 
 client = ImgurClient(client_id, client_secret)
 
 for searchTag in searchTags:
 
+    currDownload = 0
+
     result=client.gallery_search(searchTag, advanced=None, sort='time', window='all', page=0)
-
-    cap = open("crawledCaptions.txt", "w+")
-    capgif = open("crawledGIFCaptions.txt", "w+")
-
-#Create a directory to download the images to
-    cmd = "rm -rf crawledImages" 
-    os.system(cmd)
-    cmd = "mkdir crawledImages" 
-    os.system(cmd)
-    cmd = "rm -rf crawledGIFImages" 
-    os.system(cmd)
-    cmd = "mkdir crawledGIFImages" 
-    os.system(cmd)
 
     for items in result:
         print "Downloading " + items.link + " ....."
@@ -47,6 +46,7 @@ for searchTag in searchTags:
         extension = items.type
         extension = extension.replace('image/', '')
         imgName = searchTag + str(currDownload)
+        imgName = imgName.replace(' ', '_')
         extension = "." + extension
         commCount = 0
         folder = "" 
@@ -101,6 +101,8 @@ for searchTag in searchTags:
             fp.write(response.content)
             fp.close()
             currDownload += 1 
+        else:
+            break
 cap.close()
 capgif.close()
 
