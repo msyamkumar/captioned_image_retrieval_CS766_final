@@ -15,6 +15,8 @@ layer {
   image_data_param {
     #source: "data/flickr_style/train.txt"
     source: "/home/bjiashen/captioned-image-retrieval/caffenet/train.txt"
+    #source: "/home/bjiashen/captioned-image-retrieval/data/Flickr8k_text/Flickr_8k.trainImages.txt"
+    #root_folder: "/home/bjiashen/captioned-image-retrieval/data/Flicker8k_Dataset/"
     batch_size: 50
     new_height: 256
     new_width: 256
@@ -34,12 +36,18 @@ layer {
     mean_file: "data/ilsvrc12/imagenet_mean.binaryproto"
   }
   image_data_param {
-    source: "/home/bjiashen/captioned-image-retrieval/caffenet/test.txt"
+    source: "/home/bjiashen/captioned-image-retrieval/caffenet/dev.txt"
     #source: "data/flickr_style/test.txt"
     batch_size: 50
     new_height: 256
     new_width: 256
   }
+}
+# Follow layer just stops labels from being reported during training since labels just dummy values
+layer {
+  name: "silence_layer"
+  type: "Silence"
+  bottom: "label"
 }
 layer {
   name: "conv1"
@@ -47,11 +55,11 @@ layer {
   bottom: "data"
   top: "conv1"
   param {
-    lr_mult: 1
+    lr_mult: 0
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -102,11 +110,11 @@ layer {
   bottom: "norm1"
   top: "conv2"
   param {
-    lr_mult: 1
+    lr_mult: 0
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -158,11 +166,11 @@ layer {
   bottom: "norm2"
   top: "conv3"
   param {
-    lr_mult: 1
+    lr_mult: 0
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -191,11 +199,11 @@ layer {
   bottom: "conv3"
   top: "conv4"
   param {
-    lr_mult: 1
+    lr_mult: 0
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -225,11 +233,11 @@ layer {
   bottom: "conv4"
   top: "conv5"
   param {
-    lr_mult: 1
+    lr_mult: 0
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   convolution_param {
@@ -270,11 +278,11 @@ layer {
   bottom: "pool5"
   top: "fc6"
   param {
-    lr_mult: 1
+    lr_mult: 0
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   inner_product_param {
@@ -311,11 +319,11 @@ layer {
   top: "fc7"
   # Note that lr_mult can be set to 0 to disable any fine-tuning of this, and any other, layer
   param {
-    lr_mult: 1
+    lr_mult: 0
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 0
     decay_mult: 0
   }
   inner_product_param {
@@ -343,11 +351,11 @@ layer {
   top: "fc8_flickr"
   # lr_mult is set to higher than for other layers, because this layer is starting from random while the others are already trained
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 1
     decay_mult: 0
   }
   inner_product_param {
@@ -400,5 +408,5 @@ layer {
   bottom: "decode9"
   bottom: "fc7"
   top: "l2_error"
-  loss_weight: 0
+  #loss_weight: 0
 }
