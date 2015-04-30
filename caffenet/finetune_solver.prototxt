@@ -16,6 +16,6 @@ max_iter: 100000
 momentum: 0.9
 weight_decay: 0.0005
 snapshot: 1000
-snapshot_prefix: "/home/bjiashen/captioned-image-retrieval/caffenet"
+snapshot_prefix: "/home/bjiashen/captioned-image-retrieval/caffenet/finetune"
 # uncomment the following to default to CPU mode solving
 solver_mode: CPU
