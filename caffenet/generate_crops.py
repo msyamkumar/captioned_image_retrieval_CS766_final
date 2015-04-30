@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import cv2
 
 dir_im = '../data/Flicker8k_Dataset'
+dir_out = '../data/Flicker8k_crops'
+
 im_filenames = os.listdir(dir_im)
 
 for im_filename in im_filenames:
@@ -27,5 +29,8 @@ for im_filename in im_filenames:
         )
 
     for ind, crop in enumerate(all_crops):
-        output_filename = ('%i' % ind) + '_' + im_filename
+        name, ext = os.path.splitext(im_filename)
+        output_filename = os.path.join(
+                dir_out, ('%s_%i%s' % (name, ind, ext)))
+        #print(output_filename)
         cv2.imwrite(output_filename, crop)
