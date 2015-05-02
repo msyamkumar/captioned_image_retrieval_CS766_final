@@ -58,7 +58,7 @@
 % init caffe network (spews logging info)
 model_def_file = fullfile(func_dir, 'finetune_deploy.prototxt');
 model_file = fullfile(func_dir, 'bvlc_reference_caffenet.caffemodel');
-model_file = fullfile(func_dir, 'finetune_iter_1000.caffemodel');
+model_file = fullfile(func_dir, 'finetune_iter_9000.caffemodel');
 if ~exist(model_def_file, 'file')
     error('Model definition file %s not found', model_def_file);
 end
@@ -71,22 +71,34 @@ fprintf(['Initialized Caffe\n' ...
     'Model definition file:\n\t%s\nModel file:\n\t%s\n'], ...
     model_def_file, model_file);
 
-%Get a couple of nice FILENAMES! Ooo yeah
-tmp_struct = dir('data/Flicker8k_Dataset');
-im_filenames = {tmp_struct.name};
-im_filenames = im_filenames(3:end);  % Remove . and ..
+%Get a couple of nice FILENAMES! of images. Ooo yeah
+im_filenames = {};
+filenames = {'/data/Flickr8k_text/Flickr_8k.trainImages.txt', ...
+    '/data/Flickr8k_text/Flickr_8k.devImages.txt', ...
+    '/data/Flickr8k_text/Flickr_8k.testImages.txt'};
+for i = [1 3]
+    filename = filenames{i};
+    fid = fopen(filename);
+    if fid == -1; error('Error: %s cannot be opened', filename); end;
+    tmp = textscan(fid, '%s\n');
+    im_filenames = [im_filenames; tmp{1}];
+end
+
+% tmp_struct = dir('data/Flicker8k_Dataset');
+% im_filenames = {tmp_struct.name};
+% im_filenames = im_filenames(3:end);  % Remove . and ..
 
 % make dataset multiple of 10 since network takes ten image at a time
 im_filenames = im_filenames(1:end - mod(numel(im_filenames), 10));
 
-im_filenames = im_filenames(1:30);
+% im_filenames = im_filenames(1:30);
 
 % Feature vectors 1000 x M size, one column for one image filename
 feats = [];
 
 %% Compute features by batches of ten images
 tic;
-minibatch_size = 10;
+minibatch_size = 100;
 for ii = 1 : numel(im_filenames)
     im = imread(im_filenames{ii});
         
@@ -114,7 +126,7 @@ for ii = 1 : numel(im_filenames)
         end
         
         % Slot this minibatch of features into the full batch
-        feats(:, ii - 9 : ii) = minibatch_feats;
+        feats(:, ii - minibatch_size + 1 : ii) = minibatch_feats;
     end
     
     if mod(ii, 100) == 0
