@@ -1,8 +1,13 @@
 %% Performs KNN search given a set of image filenames and their corresponding feature vector.
 
-archive = 'centerCrops.mat';
-if exist(archive, 'file')
+if exist('archive', 'var') && exist(archive, 'file')
     load(archive);
+end
+expected_vars = {'im_filenames', 'feats'};
+for i = 1 : numel(expected_vars)
+    if ~exist(expected_vars{i}, 'var')
+        error('Variable %s not found', expected_vars{i});
+    end
 end
 
 %% Load filenames of train/test set
@@ -51,25 +56,35 @@ fprintf('Done in %f s\n', toc);
 
 %% Display results
 
-for ii = 1:20
-    query_filename = test_filenames{ii};
-    result_filename = train_filenames{inds(ii)};
-    
-    figure;
-    hold on;
-    subplot(121);
-    imshow(imread(query_filename));
-    title('Query');
-    subplot(122);
-    imshow(imread(result_filename));
-    title('Result');
-end
+if ~exist('do_display', 'var')  || do_display;
 
+    for ii = 1:20
+
+        query_filename = test_filenames{ii};
+        result_filename = train_filenames{inds(ii)};
+
+        figure;
+        hold on;
+        subplot(121);
+        imshow(imread(query_filename));
+        title('Query');
+        subplot(122);
+        imshow(imread(result_filename));
+        title('Result');
+    end
+end
+    
 
 %% Save results
 
 if exist('do_save', 'var') && do_save
-    output_filename = fullfile(fileparts(mfilename('fullpath')), 'caffenet_results.txt');
+    
+    if ~exist('archive', 'var')
+        error('Did not specify archive file. Cannot generate output filename');
+    end
+
+    [~, filename, ext] = fileparts(archive);
+    output_filename = fullfile(fileparts(mfilename('fullpath')), [filename '.txt']);
     fid = fopen(output_filename, 'w');
     for ii = 1 : numel(test_filenames)
 
