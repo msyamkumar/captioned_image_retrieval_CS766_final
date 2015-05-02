@@ -56,9 +56,12 @@
 [func_dir, ~, ~] = fileparts(mfilename('fullpath'));
 
 % init caffe network (spews logging info)
-model_def_file = fullfile(func_dir, 'finetune_deploy.prototxt');
+model_def_file = fullfile(func_dir, 'deploy.prototxt');
 model_file = fullfile(func_dir, 'bvlc_reference_caffenet.caffemodel');
-model_file = fullfile(func_dir, 'finetune_iter_9000.caffemodel');
+
+% model_def_file = fullfile(func_dir, 'finetune_deploy.prototxt');
+% model_file = fullfile(func_dir, 'finetune_iter_9000.caffemodel');
+
 if ~exist(model_def_file, 'file')
     error('Model definition file %s not found', model_def_file);
 end
@@ -84,8 +87,9 @@ for i = [1 3]
     im_filenames = [im_filenames; tmp{1}];
 end
 
+fprintf('Running prediction on %i images.\n', numel(im_filenames));
 % tmp_struct = dir('data/Flicker8k_Dataset');
-% im_filenames = {tmp_struct.name};
+% im_filenames = {tmp_struct.name};lear a
 % im_filenames = im_filenames(3:end);  % Remove . and ..
 
 % make dataset multiple of 10 since network takes ten image at a time
@@ -104,8 +108,9 @@ for ii = 1 : numel(im_filenames)
         
     % Crop current image and place into the batch of ten
     % curr_crop is Height x Width x Channel
-    IMAGE_DIM = 227;
-    curr_crop = imresize(single(im), [IMAGE_DIM IMAGE_DIM], 'bilinear');
+%     IMAGE_DIM = 227;
+%     curr_crop = imresize(single(im), [IMAGE_DIM IMAGE_DIM], 'bilinear');
+    curr_crop = prepare1Image(im);
 
     [h, w, c] = size(curr_crop);
     if mod(ii - 1, minibatch_size) == 0
