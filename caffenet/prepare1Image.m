@@ -4,13 +4,16 @@ function im_prepared = prepare1Image(im)
 % Image is transposed because CaffeNet wants width to be first dimension
 % Returns a CROPPED_DIM x CROPPED_DIM x 3 matrix
 
+persistent IMAGE_MEAN;
 % ------------------------------------------------------------------------
 IMAGE_DIM = 256;
 CROPPED_DIM = 227;
 
-d = load('ilsvrc_2012_mean');
-IMAGE_MEAN = d.image_mean;
-IMAGE_MEAN = imresize(IMAGE_MEAN, [CROPPED_DIM CROPPED_DIM], 'bilinear');
+if isempty(IMAGE_MEAN)
+    d = load('ilsvrc_2012_mean');
+    IMAGE_MEAN = d.image_mean;
+    IMAGE_MEAN = imresize(IMAGE_MEAN, [CROPPED_DIM CROPPED_DIM], 'bilinear');
+end
 
 % resize to fixed input size
 im = single(im);
