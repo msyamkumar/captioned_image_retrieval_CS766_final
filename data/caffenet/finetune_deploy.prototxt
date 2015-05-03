@@ -1,6 +1,6 @@
-name: "CaffeNet"
+name: "Flickr8kCaffeNet"
 input: "data"
-input_dim: 8090
+input_dim: 100
 input_dim: 3
 input_dim: 227
 input_dim: 227

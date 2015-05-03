@@ -1,7 +1,7 @@
 
 filenames = {'caffenet/finetune_iter_9000_results.txt', ...
     'caffenet/caffenet_results.txt'};
-filenames = {'prefine_centercrop.txt', 'prefine_fullcrop.txt'};
+filenames = {'prefine_fullcrop.txt', 'postfine_fullcrop.txt'};
 map1 = getQuery2Result(filenames{1});
 map2 = getQuery2Result(filenames{2});
 [~, title1, ~] = fileparts(filenames{1});
