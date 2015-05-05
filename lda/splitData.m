@@ -1,12 +1,5 @@
-function [ trainFiles, captionMapTrain, testFiles, captionMapTest ] = splitData( captionMap )
+function [ trainFiles, captionMapTrain, testFiles, captionMapTest ] = splitData( captionMap, trainFile, testFile )
 % splits data into training and test caption maps
-
-if ~exist('trainingFilename', 'var')
-    trainFile = 'data/Flickr8k_text/Flickr_8k.trainImages.txt';
-end
-if ~exist('testFilename', 'var')
-    testFile = 'data/Flickr8k_text/Flickr_8k.testImages.txt';
-end
 
 % Identify training/test images
 captionMapTrain = containers.Map();
