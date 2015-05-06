@@ -3,14 +3,14 @@
 net: "/home/bjiashen/captioned-image-retrieval/caffenet/finetune_train_val.prototxt"
 #net: "models/finetune_flickr_style/train_val.prototxt"
 test_iter: 20
-test_interval: 1000
+test_interval: 200
 # lr for fine-tuning should be lower than when starting from scratch
 base_lr: 0.001
 lr_policy: "step"
 gamma: 0.1
 # stepsize should also be lower, as we're closer to being done
 # stepsize is no. of iter before lr is decayed by gamma
-stepsize: 20000
+stepsize: 3000
 display: 20
 max_iter: 100000
 momentum: 0.9
