@@ -1,7 +1,9 @@
+import random
 import os
 import subprocess
 import re
 import shlex
+from collections import defaultdict
 
 if __name__ == "__main__":
     print "Hello, World!"
@@ -11,24 +13,32 @@ if __name__ == "__main__":
 
     lsParts = out.split("\n")
 
-    nameList = []
+    #nameList = []
+    nameList = defaultdict()
 
     for line in lsParts:
         if line is not '':
             matchObj = re.match(r'([A-z]+)\d+\.', line, re.M|re.I)
             if matchObj:
-                nameList.append(matchObj.group(1))
+                tagName = matchObj.group(1)
+                print tagName
+                #nameList[].append(matchObj.group(1))
+                if tagName in nameList:
+                    print "Already exists!"
+                    nameList[tagName].append(line)
+                else:
+                    print "New key"
+                    nameList[tagName] = []
+                    nameList[tagName].append(line)
 
-    sortedList = sorted(set(nameList))
-    print sortedList
+    #sortedList = sorted(set(nameList))
+    #print sortedList
+    #print nameList
 
-    grepStr = sortedList[0]
 
-    proc1 = subprocess.Popen(shlex.split('ls', '-a', 'finishedImages'),stdout=subprocess.PIPE)
-    proc2 = subprocess.Popen(shlex.split(grepStr),stdin=proc1.stdout,
-                             stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-
-    proc1.stdout.close() # Allow proc1 to receive a SIGPIPE if proc2 exits.
-    out,err=proc2.communicate()
-
-    print out
+    for key,value in nameList.iteritems():
+        print key
+        random.shuffle(value)
+        print "______"
+        print ",".join(value)
+        print "*********"
