@@ -28,6 +28,9 @@ for i = 1 : numLines
     captionList = cell(1,1);
     if isKey(captionListMap, filename)
         captionList = captionListMap(filename);
+        if numel(captionList) >= params.maxCaptions
+            continue;
+        end
         captionList{end+1} = caption;
     else
         captionList{1} = caption;

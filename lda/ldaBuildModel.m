@@ -7,7 +7,7 @@ function [WP, DP, Z] = ldaBuildModel(WO, WS, DS, params)
 modelFile = params.modelFile;
 topicsFile = params.topicsFile;
 
-if exist(modelFile, 'file')
+if exist(modelFile, 'file') && params.toSkip
     load(modelFile);
 else
     % Set the number of topics
