@@ -50,8 +50,9 @@ xTest = feats(:, testInds)';
 
 %% Get KNN of each test instance
 
-fprintf('Running KNN... ');tic;
-inds = knnsearch(xTrain, xTest);
+K = 3;
+fprintf('Running KNN where K = %i... ', K);tic;
+inds = knnsearch(xTrain, xTest, 'K', K);
 fprintf('Done in %f s\n', toc);
 
 %% Display results
@@ -61,16 +62,19 @@ if ~exist('do_display', 'var')  || do_display;
     for ii = 1:20
 
         query_filename = test_filenames{ii};
-        result_filename = train_filenames{inds(ii)};
 
         figure;
         hold on;
-        subplot(121);
+        subplot(1, K + 1, 1);
         imshow(imread(query_filename));
         title('Query');
-        subplot(122);
-        imshow(imread(result_filename));
-        title('Result');
+        
+        for ki = 1 : K
+            result_filename = train_filenames{inds(ii, ki)};
+            subplot(1, K + 1, ki + 1);
+            imshow(imread(result_filename));
+            title(sprintf('Top #%i result', ki));
+        end
     end
 end
     
@@ -84,14 +88,15 @@ if exist('do_save', 'var') && do_save
     end
 
     [~, filename, ext] = fileparts(archive);
-    output_filename = fullfile(fileparts(mfilename('fullpath')), [filename '.txt']);
+    output_filename = fullfile(fileparts(mfilename('fullpath')), [filename '2.txt']);
     fid = fopen(output_filename, 'w');
     for ii = 1 : numel(test_filenames)
 
         query_filename = test_filenames{ii};
         result_filename = train_filenames{inds(ii)};
-
-        fprintf(fid, '%s\t%s\n', query_filename, result_filename);
+        
+        fmt = ['%s' repmat('\t%s', 1, K) '\n'];
+        fprintf(fid, fmt, query_filename, train_filenames{inds(ii, :)});
     end
     fclose(fid);
 end
