@@ -10,8 +10,7 @@ def remove_non_ascii_1(text):
 
 downloadLimit = 100
 
-#searchTags =  [' sand viper', 'greesnake', ' grass snake', 'king snake', ' kingsnake', 'garter snake', ' grass snake', 'water snake', 'vine snake', 'night snake', ' Hypsiglena torquata', 'boa constrictor', ' Constrictor constrictor', 'rock python', ' rock snake', ' Pythosebae', 'Indiacobra', ' Naja naja', 'greemamba', 'sea snake', 'horned viper', ' cerastes', ' sand viper', ' horned asp', ' Cerastes cornutus', 'diamondback', ' diamondback rattlesnake', ' Crotalus adamanteus', 'sidewinder', ' horned rattlesnake', ' Crotalus cerastes', 'trilobite', 'harvestman', ' daddy longlegs', ' Phalangium opilio', 'scorpion', 'black and gold gardespider', ' Argiope aurantia', 'barspider', ' Araneus cavaticus', 'gardespider', ' Aranea diademata', 'black widow', ' Latrodectus mactans', 'tarantula', 'wolf spider', ' hunting spider', 'tick', 'centipede', 'black grouse', 'ptarmigan', 'ruffed grouse', ' partridge', ' Bonasa umbellus', 'prairie chicken', ' prairie grouse']
-searchTags =  ['black widow', ' Latrodectus mactans', 'tarantula', 'wolf spider', ' hunting spider', 'tick', 'centipede', 'black grouse', 'ptarmigan', 'ruffed grouse', ' partridge', ' Bonasa umbellus', 'prairie chicken', ' prairie grous', ' prairie fowl', 'peacock', 'quail', 'partridge', 'Africagrey', ' Africagray', ' Psittacus erithacus', 'macaw', 'sulphur-crested cockatoo', ' Kakatoe galerita', ' Cacatua galerita', 'lorikeet', 'coucal', 'bee eater', 'hornbill', 'hummingbird', 'jacamar', 'toucan', 'drake', 'red-breasted merganser', ' Mergus serrator', 'goose', 'black swan', ' Cygnus atratus', 'tusker', 'echidna', ' spiny anteater', ' anteater', 'platypus', ' duckbill', ' duckbilled platypus', ' duck-billed platypus', ' Ornithorhynchus anatinus', 'wallaby', ' brush kangaroo', 'koala', ' koala bear', ' kangaroo bear', ' native bear', ' Phascolarctos cinereus']
+searchTags = ['chow', ' chow chow', 'keeshond', 'Brabancogriffon', 'Pembroke', ' Pembroke Welsh corgi', 'Cardigan', ' CardigaWelsh corgi', 'toy poodle', 'miniature poodle', 'standard poodle', 'Mexicahairless']
 
 #client_id = '140f860c98af613'
 #client_secret = '96ab107bb54adec22e30bab0acf46f801180ec91'
@@ -67,6 +66,7 @@ for searchTag in searchTags:
         else:
             cap.write(captionData)
 
+        commCount += 1
         comments = client.gallery_item_comments(items.id, sort='best')
 
         for comment in comments:
