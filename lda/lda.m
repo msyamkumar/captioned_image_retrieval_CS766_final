@@ -49,7 +49,7 @@ params.maxCaptions = 10;
 params.toPlot = 1;
 
 % skip files if already generated
-params.toSkip = 1;
+params.toSkip = 0;
 
 %% Retrieve image captions into map captionsMap
 disp('Loading image captions...');

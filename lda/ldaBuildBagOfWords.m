@@ -40,6 +40,22 @@ end
 idx = logical(idx);
 V = V(idx);
 
+% Build tf-idf matrices
+counts = zeros(numel(V), numImages);
+for i = 1 : numImages
+    tokens = strsplit(captionMap(imageList{i}));
+    for j = 1 : numel(tokens)
+        word = char(tokens(j));
+        if isKey(wordMap, word)
+            j = wordMap(word);
+            counts(j,i) = counts(j,i) + 1;
+        end
+    end
+end
+TF = 0.5 + (0.5 .* counts)/repmat(max(counts),numel(V),1);
+IDF = repmat(log(numImages ./ sum(logical(counts),2)), 1, numImages);
+W = TF .* IDF;
+
 % Build token, document index vectors
 disp('Building token and document index vectors...');
 clear WS DS;
