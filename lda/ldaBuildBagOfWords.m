@@ -41,6 +41,7 @@ idx = logical(idx);
 V = V(idx);
 
 % Build tf-idf matrices
+disp('Building TF-IDF matrices...');
 counts = zeros(numel(V), numImages);
 for i = 1 : numImages
     tokens = strsplit(captionMap(imageList{i}));
@@ -52,7 +53,7 @@ for i = 1 : numImages
         end
     end
 end
-TF = 0.5 + (0.5 .* counts)/repmat(max(counts),numel(V),1);
+TF = 0.5 + (0.5 .* counts) ./ repmat(max(counts),numel(V),1);
 IDF = repmat(log(numImages ./ sum(logical(counts),2)), 1, numImages);
 W = TF .* IDF;
 
