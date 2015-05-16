@@ -18,8 +18,22 @@ ldaTest = X_test;
 nnTrain = feats(1:trainSize, :);
 nnTest = feats(trainSize + 1:end, :);
 
+ldaVariance = var(ldaTrain(:));
+nnVariance = var(nnTrain(:));
 
+ldaTrain = ldaTrain./ldaVariance;
+nnTrain = nnTrain./nnVariance;
 
+combinedTrain = [ldaTrain nnTrain];
+
+ldaTest = ldaTest./ldaVariance;
+nnTest = nnTest./ldaVariance;
+
+combinedTest = [ldaTest nnTest];
+
+K = 3;
+fprintf('Running KNN where K = %i... ', K);tic;
+inds = knnsearch(combinedTrain, combinedTest, 'K', K);
 
 end
 
