@@ -3,6 +3,8 @@ function [ output_args ] = featureCombination( ldaMatFile, NNMatFile )
 %   Detailed explanation goes here
 
 %%Calculate kNN
+% ldaMatFile = 'data/lda/lda_output_features.mat';
+% NNMatFile = 'data/caffenet/postfine_fullcrop.mat';
 
 %LDA feature vector
 load(ldaMatFile);
@@ -20,11 +22,22 @@ ldaTest = X_test;
 nnTrain = feats(1:trainSize, :);
 nnTest = feats(trainSize + 1:end, :);
 
+if 0
+    numTrain = 10;
+    ldaTrain = ldaTrain(1:numTrain, :);
+    nnTrain = nnTrain(1:numTrain, :);
+end
+
+%% At this point we should have ldaTrain, ldaTest, nnTrain, nnTest
+
 ldaVariance = var(ldaTrain(:));
 nnVariance = var(nnTrain(:));
 
-ldaTrain = ldaTrain./ldaVariance;
-nnTrain = nnTrain./nnVariance;
+% ldaTrain = ldaTrain./ldaVariance;
+
+% Make visual features same variance as texture features but maintain
+% probability distribution property of LDA.
+nnTrain = nnTrain / nnVariance * ldaVariance;
 
 combinedTrain = [ldaTrain nnTrain];
 
@@ -35,14 +48,18 @@ combinedTest = [ldaTest nnTest];
 
 K = 3;
 fprintf('Running KNN where K = %i... ', K);tic;
-inds = knnsearch(combinedTrain, combinedTest, 'K', K);
+numDistribution = size(ldaTrain, 2);
+dist = @(x1, x2) getCombinedDist(x1, x2, numDistribution, 1, 0);
+dist = @(x1, x2) kldiv(x1, x2);
+inds = knnsearch(combinedTrain, combinedTest, 'K', K, 'Distance', dist);
+% inds = knnsearch(combinedTrain, combinedTest, 'K', K);
 
 %% Load filenames of train/test set
 
 % Load image filenames of train/dev/test sets
-filenames = {'../data/Flickr8k_text/Flickr_8k.trainImages.txt', ...
-    '../data/Flickr8k_text/Flickr_8k.devImages.txt', ...
-    '../data/Flickr8k_text/Flickr_8k.testImages.txt'};
+filenames = {'Flickr_8k.trainImages.txt', ...
+    'Flickr_8k.devImages.txt', ...
+    'Flickr_8k.testImages.txt'};
 for i = 1 : numel(filenames)
     filename = filenames{i};
     fid = fopen(filename);
@@ -63,7 +80,7 @@ test_filenames = test_filenames(ismember(test_filenames, im_filenames));
 
 if ~exist('do_display', 'var')  || do_display;
 
-    for ii = 1:20
+    for ii = 1:10
 
         query_filename = test_filenames{ii};
 
@@ -81,7 +98,48 @@ if ~exist('do_display', 'var')  || do_display;
         end
     end
 end
-    
 
 end
 
+function dist = kldiv(x1, x2)
+% Returns symmetric KL divergence of x1 and x2
+% `x1` is 1 x n
+% `x2` m x n
+% `dist` m x 1
+m = size(x2, 1);
+dist = zeros(m, 1);
+for i = 1 : m
+    dist(i) = mvn_div_skl(x1, x2(i, :));
+end
+end
+
+function dist = L2norm(x1, x2)
+% Returns L2 norm of x1 and x2
+% `x1` is 1 x n
+% `x2` m x n
+% `dist` m x 1
+m = size(x2, 1);
+diff = repmat(x1, [m 1]) - x2;
+dist = sqrt(sum(diff.^2, 2));
+end
+
+function dist = getCombinedDist(x1, x2, numDistribution, klWeight, l2Weight)
+% Returns the sum of (L2 distance of first half) and (KL divergence of
+% second half) of vector pairs
+% `numDistribution` no. of features to be included in KL divergence
+% calculation. We assume that the first numDistribution dimensions of a
+% vector are for KL divergence and all features after that are for L2 norm.
+% `x1` is 1 x n
+% `x2` m x n
+% `dist` m x 1
+
+if nargin <=3
+    klWeight = 1;
+    l2Weight = 1;
+end
+
+kldist = kldiv(x1(1:numDistribution), x2(:, 1:numDistribution));
+l2dist = L2norm(x1(numDistribution + 1:end), x2(:, numDistribution + 1:end));
+dist = klWeight * kldist + l2Weight * l2dist;
+
+end
