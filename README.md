@@ -14,3 +14,11 @@ Note: the source code in `SpatialPyramid` has some bugs fixed. It is not exactly
 
 1. Add the required search tags into `searchTags` array in line 13 of `crawler/gallerySearch.py`
 2. Execute `python crawler/gallerySearch.py` 
+
+Note: The crawled Imgur dataset (DataM) consists of 32K images and ~110K captions and is sized at ~16 gb. It can be provided on request.
+
+## To run LDA
+See readme in lda/
+
+## To run CNN
+See readme in caffenet/
