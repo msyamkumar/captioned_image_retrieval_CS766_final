@@ -4,8 +4,6 @@ clear all;
 close all;
 clc;
 
-addpath('../topictoolbox');
-
 params.dataDir = '../data';
 params.stopWordsFile = fullfile(params.dataDir, 'stopwordlist.txt');
 
@@ -21,19 +19,21 @@ params.testFile = fullfile(params.dataDir, ...
     fullfile('Flickr8k_text', 'Flickr_8k.testImages.txt'));
 params.outputFile = fullfile(params.dataDir, 'lda_output.txt');
 params.outputFeaturesFile = fullfile(params.dataDir, 'lda_output_features.mat');
+params.bowFile = fullfile(params.dataDir, 'bagofwords_imagecaptions.mat');
 
 % params.imageDir = fullfile(params.dataDir, 'imgur_crawled');
 % params.captionsFile = fullfile(params.dataDir, 'captionMap2.mat');
 % params.modelFile = fullfile(params.dataDir, 'ldasingle_imagecaptions2.mat');
 % params.topicsFile = fullfile(params.dataDir, 'topics2.txt');
 % params.dataFile = fullfile(params.dataDir, ...
-%     fullfile('imgur_crawled', 'captions.txt'));
+%     fullfile('imgur_crawled', 'captions_lemmatized.txt'));
 % params.trainFile = fullfile(params.dataDir, ...
 %     fullfile('imgur_crawled', 'trainingData.txt'));
 % params.testFile = fullfile(params.dataDir, ...
-%     fullfile('imgur_crawled', 'testingData3.txt'));
+%     fullfile('imgur_crawled', 'testingData.txt'));
 % params.outputFile = fullfile(params.dataDir, 'lda_output2.txt');
 % params.outputFeaturesFile = fullfile(params.dataDir, 'lda_output_features2.mat');
+% params.bowFile = fullfile(params.dataDir, 'bagofwords_imagecaptions2.mat');
 
 % number of topics
 params.T = 50;
@@ -44,12 +44,22 @@ params.K = 6;
 params.laplaceSmoothingCoefficient = 0.0001;
 % maximum number of captions to be used
 params.maxCaptions = 10;
+% delimiters for caption tokenization
+params.delimiterRegex = '[^a-zA-Z]';
+
+% mode:
+% GLOBAL_SIMILARITY: retrieve images most similar with query image
+% TOPIC_SIMILARITY: retrieve images with topics similar to query image
+% params.mode = 'GLOBAL_SIMILARITY';
+params.mode = 'TOPIC_SIMILARITY';
+% number of similar topics to retrieve
+params.numTopics = 3;
 
 % plot images
 params.toPlot = 1;
 
 % skip files if already generated
-params.toSkip = 0;
+params.toSkip = 1;
 
 %% Retrieve image captions into map captionsMap
 disp('Loading image captions...');
@@ -92,6 +102,6 @@ disp('Done.');
 %% Test model
 disp('Testing LDA model...');
 tic;
-ldaTest(captionMapTrain, captionMapTest, testFiles, wordMap, WP, DP, params);
+ldaTest(captionMapTrain, captionMapTest, testFiles, WO, wordMap, WP, DP, params);
 toc;
 disp('Done.');
