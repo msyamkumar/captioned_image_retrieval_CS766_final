@@ -22,3 +22,6 @@ See readme in lda/
 
 ## To run CNN
 See readme in caffenet/
+
+## DataM dataset
+The dataset and associated captions can be found at: http://pages.cs.wisc.edu/~ms/CS766-ComputerVision/captioned-image-retrieval/
