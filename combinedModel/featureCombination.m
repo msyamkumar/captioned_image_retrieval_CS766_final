@@ -2,25 +2,63 @@ function [ output_args ] = featureCombination( ldaMatFile, NNMatFile )
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
+
+%% Load filenames of train/test set
+
+% Load image filenames of train/dev/test sets
+filenames = {'Flickr_8k.trainImages.txt', ...
+    'Flickr_8k.devImages.txt', ...
+    'Flickr_8k.testImages.txt'};
+for i = 1 : numel(filenames)
+    filename = filenames{i};
+    fid = fopen(filename);
+    if fid == -1; error('Error: %s cannot be opened', filename); end;
+    tmp = textscan(fid, '%s\n');
+    im_filename_sets{i} = tmp{1};
+end
+
+% Join train and dev sets together; test set is separate
+train_filenames = [im_filename_sets{1}];%; im_filename_sets{2}];
+test_filenames = im_filename_sets{end};
+
+% Remove filenames that weren't featurized (that's <10 examples)
+% train_filenames = train_filenames(ismember(train_filenames, im_filenames));
+% test_filenames = test_filenames(ismember(test_filenames, im_filenames));
+
+%% Load features
 %%Calculate kNN
 % ldaMatFile = 'data/lda/lda_output_features.mat';
 % NNMatFile = 'data/caffenet/postfine_fullcrop.mat';
 
-%LDA feature vector
-load(ldaMatFile);
 %DeepNet feature vector
-load(NNMatFile);
+load(NNMatFile, 'feats', 'im_filenames');
+tmp_feats = feats'; %Make feats such that a row is a feature vector
+tmp_filenames = im_filenames;
+% Split features into the order of train and test images
+filename_inds = containers.Map(tmp_filenames(:), 1:numel(tmp_filenames));
+test_feats = tmp_feats(cell2mat(values(filename_inds, test_filenames)), :);
+train_feats = tmp_feats(cell2mat(values(filename_inds, train_filenames)), :);
+nnTest = test_feats;
+nnTrain = train_feats;
 
-%Taking transpose of DeepNet output to match format
-feats = transpose(feats);
-
-trainSize = size(X_train, 1);
-
-%Assigning the training and testing feature set
-ldaTrain = X_train;
-ldaTest = X_test;
-nnTrain = feats(1:trainSize, :);
-nnTest = feats(trainSize + 1:end, :);
+%LDA feature vector
+load(ldaMatFile, 'X', 'filenames');
+tmp_feats = X;
+tmp_filenames = filenames;
+% Split features into the order of train_filenames, test_filenames
+filename_inds = containers.Map(tmp_filenames(:), 1:numel(tmp_filenames));
+test_feats = tmp_feats(cell2mat(values(filename_inds, test_filenames)), :);
+train_feats = tmp_feats(cell2mat(values(filename_inds, train_filenames)), :);
+ldaTest = test_feats;
+ldaTrain = train_feats;
+ 
+% trainSize = size(X_train, 1);
+% 
+% %Assigning the training and testing feature set
+% ldaTrain = X_train;
+% ldaTest = X_test;
+% nnTrain = text_feats(1:trainSize, :);
+% nnTest = text_feats(trainSize + 1:end, :);
 
 if 0
     numTrain = 10;
@@ -53,7 +91,7 @@ combinedTest = [ldaTest nnTest];
 numDistribution = size(ldaTrain, 2);
 K = 3;
 text_weight = 1;
-visual_weight = 0;
+visual_weight = 1;
 fprintf('Running KNN where K = %i, KL weight = %f, L2 weight = %f\n', K, text_weight, visual_weight); tic;
 % dist = @(x1, x2) getKLL2Dist(x1, x2, numDistribution, text_weight, visual_weight);
 % dist = @(x1, x2) kldiv(x1, x2);
@@ -62,27 +100,6 @@ inds = knnsearch(combinedTrain, combinedTest, 'K', K, 'Distance', dist);
 % inds = knnsearch(combinedTrain, combinedTest, 'K', K);
 fprintf('Done in %f s\n', toc);
 
-%% Load filenames of train/test set
-
-% Load image filenames of train/dev/test sets
-filenames = {'Flickr_8k.trainImages.txt', ...
-    'Flickr_8k.devImages.txt', ...
-    'Flickr_8k.testImages.txt'};
-for i = 1 : numel(filenames)
-    filename = filenames{i};
-    fid = fopen(filename);
-    if fid == -1; error('Error: %s cannot be opened', filename); end;
-    tmp = textscan(fid, '%s\n');
-    im_filename_sets{i} = tmp{1};
-end
-
-% Join train and dev sets together; test set is separate
-train_filenames = [im_filename_sets{1}];%; im_filename_sets{2}];
-test_filenames = im_filename_sets{end};
-
-% Remove filenames that weren't featurized (that's <10 examples)
-train_filenames = train_filenames(ismember(train_filenames, im_filenames));
-test_filenames = test_filenames(ismember(test_filenames, im_filenames));
 
 %% Display results
 
