@@ -10,7 +10,7 @@ Note: the source code in `SpatialPyramid` has some bugs fixed. It is not exactly
 2. Unzip the Flickr 8k dataset to a `data` subdirectory
 3. Run `close all; clear all; baseline;`
 
-## To run the crawling
+## To run crawling
 
 1. Add the required search tags into `searchTags` array in line 13 of `crawler/gallerySearch.py`
 2. Execute `python crawler/gallerySearch.py` 
