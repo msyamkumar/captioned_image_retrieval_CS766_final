@@ -1,0 +1,1 @@
+*ind.mat are 1000x3 matrices. These are results of 3-NN of the joint model. Each element is the index of the training image, e.g., when an element is 99, the retrieved image is the 99th training image, according to the Flickr8k dataset.
