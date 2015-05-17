@@ -1,6 +1,11 @@
 function [ WO, wordMap, WS, DS ] = ldaBuildBagOfWords( captionMap, params )
 % Builds bag-of-words model and vocabulary from image captions
 
+if exist(params.bowFile, 'file') && params.toSkip
+    load(params.bowFile);
+    return;
+end
+
 stopWordsFile = params.stopWordsFile;
 numImages = numel(captionMap.keys);
 imageList = captionMap.keys;
@@ -8,7 +13,9 @@ concatCaptions = captionMap.values;
 
 % Build vocabulary so that we can build bag of words
 disp('Building vocabulary...');
-V = unique(strsplit(strjoin(concatCaptions)));  % strjoin adds a space delimiter
+% strjoin adds a space delimiter
+V = unique(strsplit(strjoin(concatCaptions), params.delimiterRegex, ...
+    'DelimiterType', 'RegularExpression', 'CollapseDelimiters', true));
 idx = zeros(numel(V),1);
 
 % map from words to their index in vocabulary
@@ -40,16 +47,39 @@ end
 idx = logical(idx);
 V = V(idx);
 
+% Gather tokens
+tokensM = cell(numImages, 1);
+for i = 1 : numImages
+    tokensM{i} = strsplit(captionMap(imageList{i}), params.delimiterRegex, ...
+        'DelimiterType', 'RegularExpression', 'CollapseDelimiters', true);
+end
+
+% % Build token, document index vectors
+% disp('Building token and document index vectors...');
+% clear WS DS;
+% k = 1;
+% for i = 1 : numImages
+%     tokens = tokensM{i};
+%     for j = 1 : numel(tokens)
+%         word = char(tokens(j));
+%         if isKey(wordMap, word)
+%             WS(k) = wordMap(word);
+%             DS(k) = i;
+%             k = k + 1;
+%         end
+%     end
+% end
+
 % Build tf-idf matrices
 disp('Building TF-IDF matrices...');
 counts = zeros(numel(V), numImages);
 for i = 1 : numImages
-    tokens = strsplit(captionMap(imageList{i}));
+    tokens = tokensM{i};
     for j = 1 : numel(tokens)
         word = char(tokens(j));
         if isKey(wordMap, word)
-            j = wordMap(word);
-            counts(j,i) = counts(j,i) + 1;
+            k = wordMap(word);
+            counts(k,i) = counts(k,i) + 1;
         end
     end
 end
@@ -62,20 +92,32 @@ disp('Building token and document index vectors...');
 clear WS DS;
 k = 1;
 for i = 1 : numImages
-    tokens = strsplit(captionMap(imageList{i}));
+    tokens = unique(tokensM{i});
+    % get token weights
+    tokenWeights = zeros(numel(tokens), 1);
     for j = 1 : numel(tokens)
         word = char(tokens(j));
         if isKey(wordMap, word)
-            WS(k) = wordMap(word);
-            DS(k) = i;
-            k = k + 1;
+            idx = wordMap(word);
+            tokenWeights(j) = W(idx,i);
+        end
+    end
+    % round token weights to counts
+    tokenWeights = round(tokenWeights);
+    for j = 1 : numel(tokens)
+        word = char(tokens(j));
+        if isKey(wordMap, word);
+            for c = 1 : tokenWeights(j)
+                WS(k) = wordMap(word);
+                DS(k) = i;
+                k = k + 1;
+            end
         end
     end
 end
 
 WO = V';
-% save(fullfile(dataDir, 'words_imagecaptions.mat'), 'WO');
-
 WS = WS';
 DS = DS';
-% save(fullfile(dataDir, 'bagofwords_imagecaptions.mat'), 'WS', 'DS');
+
+save(params.bowFile, 'WO', 'wordMap', 'WS', 'DS');

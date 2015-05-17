@@ -1,7 +1,7 @@
 #Run LDA on dataset (Flickr8k by default)
 
 Steps:
-- Run 'compilescripts' in ../topictoolbox once on your system if Linux/MAC
+- Run ldaStartup.m once after opening MATLAB
 - Run lda.m
 - Change parameters in lda.m if required
 
