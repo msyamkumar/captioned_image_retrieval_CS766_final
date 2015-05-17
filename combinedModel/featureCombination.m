@@ -41,20 +41,23 @@ nnSTD = std(nnTrain(:));
 % probability distribution property of LDA.
 nnTrain = nnTrain / nnSTD * ldaSTD;
 combinedTrain = [ldaTrain nnTrain];
+% combinedTrain = [ldaTrain];
 
 % Concatenate visual and textual features of test data
 % ldaTest = ldaTest./ldaVariance;
 nnTest = nnTest / nnSTD * ldaSTD;
 combinedTest = [ldaTest nnTest];
+% combinedTest = [ldaTest];
 
 % Run search
 numDistribution = size(ldaTrain, 2);
 K = 3;
-kl_weight = 1;
-l2_weight = 0;
-dist = @(x1, x2) getCombinedDist(x1, x2, numDistribution, kl_weight, l2_weight);
-fprintf('Running KNN where K = %i, KL weight = %f, L2 weight = %f\n', K, kl_weight, l2_weight); tic;
+text_weight = 1;
+visual_weight = 0;
+fprintf('Running KNN where K = %i, KL weight = %f, L2 weight = %f\n', K, text_weight, visual_weight); tic;
+% dist = @(x1, x2) getKLL2Dist(x1, x2, numDistribution, text_weight, visual_weight);
 % dist = @(x1, x2) kldiv(x1, x2);
+dist = @(x1, x2) getWeightedL2Dist(x1, x2, numDistribution, text_weight, visual_weight);
 inds = knnsearch(combinedTrain, combinedTest, 'K', K, 'Distance', dist);
 % inds = knnsearch(combinedTrain, combinedTest, 'K', K);
 fprintf('Done in %f s\n', toc);
@@ -162,7 +165,16 @@ diff = repmat(x1, [m 1]) - x2;
 dist = sqrt(sum(diff.^2, 2));
 end
 
-function dist = getCombinedDist(x1, x2, numDistribution, klWeight, l2Weight)
+
+function dist = getWeightedL2Dist(x1, x2, numDistribution, textWeight, visualWeight)
+
+text_dist = L2norm(x1(1:numDistribution), x2(:, 1:numDistribution));
+visual_dist = L2norm(x1(numDistribution + 1:end), x2(:, numDistribution + 1:end));
+dist = textWeight * text_dist + visualWeight * visual_dist;
+
+end
+
+function dist = getKLL2Dist(x1, x2, numDistribution, klWeight, l2Weight)
 % Returns the sum of (L2 distance of first half) and (KL divergence of
 % second half) of vector pairs
 % `numDistribution` no. of features to be included in KL divergence
