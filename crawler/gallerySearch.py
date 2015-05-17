@@ -10,7 +10,7 @@ def remove_non_ascii_1(text):
 
 downloadLimit = 100
 
-searchTags = [' husky', 'malamute', ' malemute', ' Alaskamalamute', 'Siberiahusky', 'dalmatian', ' coach dog', ' carriage dog', 'affenpinscher', ' monkey pinscher', ' monkey dog', 'basenji', 'pug',' pug-dog', 'Leonberg', 'Newfoundland', ' Newfoundland dog', 'Great Pyrenees', 'Samoyed', ' Samoyede', 'Pomeranian', 'chow', ' chow chow', 'keeshond', 'Brabancogriffon', 'Pembroke', ' Pembroke Welsh corgi', 'Cardigan', ' CardigaWelsh corgi', 'toy poodle', 'miniature poodle', 'standard poodle', 'Mexicahairless']
+searchTags = ['chow', ' chow chow', 'keeshond', 'Brabancogriffon', 'Pembroke', ' Pembroke Welsh corgi', 'Cardigan', ' CardigaWelsh corgi', 'toy poodle', 'miniature poodle', 'standard poodle', 'Mexicahairless']
 
 #client_id = '140f860c98af613'
 #client_secret = '96ab107bb54adec22e30bab0acf46f801180ec91'

@@ -66,8 +66,8 @@ for i = 1 : testSize
     if (params.toPlot)
         fig1 = figure;
         [X,mapX] = imread(fullfile(params.imageDir, testImage));
-        subplot(3,3,2), imshow(X,mapX);
-        fprintf('Nearest neighbors for %s:\n', document);
+        subplot(3,3,1), imshow(X,mapX);
+        fprintf('\n----> Nearest neighbors for %s:\n\n', document);
         for j = 1:numel(nearestNeighbors)
             [X,mapX] = imread(fullfile(params.imageDir, nearestNeighbors{j}));
             subplot(3,3,j+3), imshow(X,mapX);

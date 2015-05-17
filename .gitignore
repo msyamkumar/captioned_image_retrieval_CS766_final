@@ -2,3 +2,4 @@ caffenet/finetune_iter*
 *.mat
 *.solverstate
 *.caffemodel
+*.mexa64
