@@ -24,35 +24,40 @@ nnTest = feats(trainSize + 1:end, :);
 
 if 0
     numTrain = 10;
+    fprintf('Subsampling training images to %i for speed\n', numTrain);
     ldaTrain = ldaTrain(1:numTrain, :);
     nnTrain = nnTrain(1:numTrain, :);
 end
 
 %% At this point we should have ldaTrain, ldaTest, nnTrain, nnTest
 
-ldaVariance = var(ldaTrain(:));
-nnVariance = var(nnTrain(:));
+ldaSTD = std(ldaTrain(:));
+nnSTD = std(nnTrain(:));
 
 % ldaTrain = ldaTrain./ldaVariance;
 
+% Concatenate visual and textual features of training data
 % Make visual features same variance as texture features but maintain
 % probability distribution property of LDA.
-nnTrain = nnTrain / nnVariance * ldaVariance;
-
+nnTrain = nnTrain / nnSTD * ldaSTD;
 combinedTrain = [ldaTrain nnTrain];
 
-ldaTest = ldaTest./ldaVariance;
-nnTest = nnTest./ldaVariance;
-
+% Concatenate visual and textual features of test data
+% ldaTest = ldaTest./ldaVariance;
+nnTest = nnTest / nnSTD * ldaSTD;
 combinedTest = [ldaTest nnTest];
 
-K = 3;
-fprintf('Running KNN where K = %i... ', K);tic;
+% Run search
 numDistribution = size(ldaTrain, 2);
-dist = @(x1, x2) getCombinedDist(x1, x2, numDistribution, 1, 0);
-dist = @(x1, x2) kldiv(x1, x2);
+K = 3;
+kl_weight = 1;
+l2_weight = 0;
+dist = @(x1, x2) getCombinedDist(x1, x2, numDistribution, kl_weight, l2_weight);
+fprintf('Running KNN where K = %i, KL weight = %f, L2 weight = %f\n', K, kl_weight, l2_weight); tic;
+% dist = @(x1, x2) kldiv(x1, x2);
 inds = knnsearch(combinedTrain, combinedTest, 'K', K, 'Distance', dist);
 % inds = knnsearch(combinedTrain, combinedTest, 'K', K);
+fprintf('Done in %f s\n', toc);
 
 %% Load filenames of train/test set
 
@@ -107,10 +112,44 @@ function dist = kldiv(x1, x2)
 % `x2` m x n
 % `dist` m x 1
 m = size(x2, 1);
-dist = zeros(m, 1);
-for i = 1 : m
-    dist(i) = mvn_div_skl(x1, x2(i, :));
+
+if 1
+    
+    % Calculate div(x2, x1)
+    P = x2;  % the tall matrix
+    Q = x1;  % the row vector
+    Q = Q ./sum(Q);
+    P = P ./repmat(sum(P,2),[1 size(P,2)]);
+    temp =  P.*log(P./repmat(Q,[size(P,1) 1]));
+    temp(isnan(temp))=0;% resolving the case when P(i)==0
+    dist = sum(temp,2);
+    divX2X1 = dist;
+    
+    % Calculate div(x1, x2)
+    P = x1;  % the row vector
+    Q = x2;  % the tall matrix
+    P = P ./sum(P);
+    Q = Q ./repmat(sum(Q,2),[1 size(Q,2)]);
+    P = repmat(P, [m 1]);
+    temp =  P.*log(P./Q);
+    temp(isnan(temp))=0;% resolving the case when P(i)==0
+    dist = sum(temp,2);
+    divX1X2 = dist;
+    
+    dist = (divX2X1 + divX1X2) / 2;
+
+else
+    
+    % Inefficient implementation
+    divX2X1 = KLDiv(x2, x1);
+    divX1X2 = zeros(m, 1);
+    for i = 1 : m
+        divX1X2(i) = KLDiv(x1, x2(i, :));
+    end
+
+    dist = (divX2X1 + divX1X2) / 2;
 end
+
 end
 
 function dist = L2norm(x1, x2)
